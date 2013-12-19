@@ -2,19 +2,7 @@ FILE( GLOB_RECURSE KDL_SRCS [^.]*.cpp [^.]*.cxx)
 FILE( GLOB KDL_HPPS [^.]*.hpp [^.]*.inl)
 
 FILE( GLOB UTIL_HPPS utilities/[^.]*.h utilities/[^.]*.hpp)
-
-#In Windows (Visual Studio) it is necessary to specify the postfix
-#of the debug library name and no symbols are exported by kdl, 
-#so it is necessary to compile it as a static library
-IF(MSVC)
-    SET(CMAKE_DEBUG_POSTFIX "d")
-    SET(LIB_TYPE STATIC)
-ELSE(MSVC)
-    SET(LIB_TYPE SHARED)
-ENDIF(MSVC)
-
-ADD_LIBRARY(orocos-kdl ${LIB_TYPE} ${KDL_SRCS})
- 
+ADD_LIBRARY(orocos-kdl SHARED ${KDL_SRCS})
 SET_TARGET_PROPERTIES( orocos-kdl PROPERTIES
   SOVERSION "${KDL_VERSION_MAJOR}.${KDL_VERSION_MINOR}"
   VERSION "${KDL_VERSION}"
@@ -25,7 +13,6 @@ SET_TARGET_PROPERTIES( orocos-kdl PROPERTIES
 
 INSTALL(TARGETS orocos-kdl
   EXPORT OrocosKDLTargets
-  ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   PUBLIC_HEADER DESTINATION include/kdl
 )
