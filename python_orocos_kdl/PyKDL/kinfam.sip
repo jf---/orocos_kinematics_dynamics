@@ -503,6 +503,20 @@ public:
 };
 
 
+class ChainIkSolverPos_LMA_JL : ChainIkSolverPos
+{
+%TypeHeaderCode
+#include <kdl/chainiksolverpos_lma_jl.hpp>
+using namespace KDL;
+%End
+public:
+    ChainIkSolverPos_LMA_JL(const Chain& chain, const JntArray& _q_min, const JntArray& _q_max, double eps=0.00001,
+     int _maxiter=500, double _eps_joints=0.000000000000001);
+
+    virtual int CartToJnt(const JntArray& q_init , const Frame& p_in ,JntArray& q_out);
+};
+
+
 class ChainIkSolverVel_pinv_nso : ChainIkSolverVel
 {
 %TypeHeaderCode
