@@ -182,7 +182,7 @@ public:
 
     double __getitem__ (int index);
 %MethodCode
-    if (a0 < 0 || a0 >= (int)sipCpp->rows()) {
+    if (a0 < 0 || a0 >= sipCpp->rows()) {
         PyErr_SetString(PyExc_IndexError, "JntArray index out of range");
         return 0;
     }
@@ -191,7 +191,7 @@ public:
     
     void __setitem__(int index, double value);
 %MethodCode
-    if (a0 < 0 || a0 >= (int)sipCpp->rows()) {
+    if (a0 < 0 || a0 >= sipCpp->rows()) {
         PyErr_SetString(PyExc_IndexError, "JntArray index out of range");
         return 0;
     }
@@ -264,7 +264,7 @@ public:
 %MethodCode
     int i,j;
     PyArg_ParseTuple(a0,"ii",&i,&j);
-    if (i < 0 || j < 0 || i > 5 || j >= (int)sipCpp->columns()) {
+    if (i < 0 || j < 0 || i > 5 || j >= sipCpp->columns()) {
         PyErr_SetString(PyExc_IndexError, "Jacobian index out of range");
         return 0;
     }
@@ -275,7 +275,7 @@ public:
 %MethodCode
     int i,j;
     PyArg_ParseTuple(a0,"ii",&i,&j);
-    if (i < 0 || j < 0 || i > 5 || j >= (int)sipCpp->columns()) {
+    if (i < 0 || j < 0 || i > 5 || j >= sipCpp->columns()) {
         PyErr_SetString(PyExc_IndexError, "Jacobian index out of range");
         return 0;
     }
@@ -490,26 +490,14 @@ public:
 };
 
 
-// class ChainIkSolverPos_LMA : ChainIkSolverPos
-// {
-// %TypeHeaderCode
-// #include <kdl/chainiksolverpos_lma.hpp>
-// using namespace KDL;
-// %End
-// public:
-//     ChainIkSolverPos_LMA(const Chain& chain, double eps=1E-5, int _maxiter=500, double _eps_joints=1E-15);
-
-//     virtual int CartToJnt(const JntArray& q_init , const Frame& p_in ,JntArray& q_out);
-// };
-
-class ChainIkSolverPos_LMA_JL : ChainIkSolverPos
+class ChainIkSolverPos_LMA : ChainIkSolverPos
 {
 %TypeHeaderCode
-#include <kdl/chainiksolverpos_lma_jl.hpp>
+#include <kdl/chainiksolverpos_lma.hpp>
 using namespace KDL;
 %End
 public:
-    ChainIkSolverPos_LMA_JL(const Chain& chain, const JntArray& _q_min, const JntArray& _q_max, double eps=0.00001, int _maxiter=500, double _eps_joints=0.000000000000001);
+    ChainIkSolverPos_LMA(const Chain& chain, double eps=0.00001, int _maxiter=500, double _eps_joints=0.000000000000001);
 
     virtual int CartToJnt(const JntArray& q_init , const Frame& p_in ,JntArray& q_out);
 };
