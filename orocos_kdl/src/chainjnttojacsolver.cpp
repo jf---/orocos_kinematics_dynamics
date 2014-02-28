@@ -44,31 +44,19 @@ namespace KDL
                 nr_of_unlocked_joints_++;
         }
 
-		return 0;
+        return 0;
     }
 
-    int ChainJntToJacSolver::JntToJac(const JntArray& q_in, Jacobian& jac, int seg_nr)
+    int ChainJntToJacSolver::JntToJac(const JntArray& q_in,Jacobian& jac)
     {
-        unsigned int segmentNr;
-        if(seg_nr<0)
-            segmentNr=chain.getNrOfSegments();
-        else
-            segmentNr = seg_nr;
-
-        //Initialize Jacobian to zero since only segmentNr colunns are computed
-        SetToZero(jac) ;
-
         if(q_in.rows()!=chain.getNrOfJoints()||nr_of_unlocked_joints_!=jac.columns())
             return -1;
-        else if(segmentNr>chain.getNrOfSegments())
-            return -1;
-
         T_tmp = Frame::Identity();
         SetToZero(t_tmp);
         int j=0;
         int k=0;
         Frame total;
-        for (unsigned int i=0;i<segmentNr;i++) {
+        for (unsigned int i=0;i<chain.getNrOfSegments();i++) {
             //Calculate new Frame_base_ee
             if(chain.getSegment(i).getJoint().getType()!=Joint::None){
             	//pose of the new end-point expressed in the base
