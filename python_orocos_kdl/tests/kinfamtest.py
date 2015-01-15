@@ -59,14 +59,27 @@ class KinfamTestFunctions(unittest.TestCase):
         self.iksolverpos = ChainIkSolverPos_NR(self.chain,self.fksolverpos,self.iksolvervel)
 
     def testBuildTree(self):
-        self.tree = Tree()
+        tree = Tree()
         prev_segment_name = "root"
         for i in self.segments:
             next_segment_name = i.getName()
-            add_seg_ok = self.tree.addSegment(i, prev_segment_name)
+            add_seg_ok = tree.addSegment(i, prev_segment_name)
             msg = "could not add segment {0} to segment {1}".format(prev_segment_name, next_segment_name)
             self.assertTrue(add_seg_ok, msg)
             prev_segment_name = next_segment_name
+
+    def testAddChainToTree(self):
+        treeA = Tree()
+        treeA.addChain(self.chain, "root")
+        self.assertEqual(treeA.getNrOfSegments(), self.chain.getNrOfSegments(), "incorrect nr of segments")
+
+    def testAddTreeToTree(self):
+        treeA = Tree()
+        treeA.addChain(self.chain, "root")
+
+        treeB = Tree()
+        self.assertTrue(treeB.addTree(treeA, "root"), "could not add treeA to treeB")
+        self.assertEqual(treeB.getNrOfSegments(), 9)
 
     def testFkPosAndJac(self):
         deltaq = 1E-4
