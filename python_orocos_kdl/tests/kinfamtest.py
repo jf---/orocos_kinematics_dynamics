@@ -28,31 +28,45 @@ import random
 class KinfamTestFunctions(unittest.TestCase):
     
     def setUp(self):
+        seg1 = Segment("seg1", Joint(Joint.RotZ),
+                                 Frame(Vector(0.0,0.0,0.0)))
+        seg2 = Segment("seg2", Joint(Joint.RotX),
+                                 Frame(Vector(0.0,0.0,0.9)))
+        seg3 = Segment("seg3", Joint(Joint.None),
+                                 Frame(Vector(-0.4,0.0,0.0)))
+        seg4 = Segment("seg4", Joint(Joint.RotY),
+                             Frame(Vector(0.0,0.0,1.2)))
+        seg5 = Segment("seg5", Joint(Joint.None),
+                                 Frame(Vector(0.4,0.0,0.0)))
+        seg6 = Segment("seg6", Joint(Joint.TransZ),
+                                 Frame(Vector(0.0,0.0,1.4)))
+        seg7 = Segment("seg7", Joint(Joint.TransX),
+                                 Frame(Vector(0.0,0.0,0.0)))
+        seg8 = Segment("seg8", Joint(Joint.TransY),
+                                 Frame(Vector(0.0,0.0,0.4)))
+        seg9 = Segment("seg9", Joint(Joint.None),
+                                 Frame(Vector(0.0,0.0,0.0)))
+
+        self.segments = (seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9)
+
         self.chain = Chain()
-        self.chain.addSegment(Segment(Joint(Joint.RotZ),
-                                 Frame(Vector(0.0,0.0,0.0))))
-        self.chain.addSegment(Segment(Joint(Joint.RotX),
-                                 Frame(Vector(0.0,0.0,0.9))))
-        self.chain.addSegment(Segment(Joint(Joint.None),
-                                 Frame(Vector(-0.4,0.0,0.0))))
-        self.chain.addSegment(Segment(Joint(Joint.RotY),
-                             Frame(Vector(0.0,0.0,1.2))))
-        self.chain.addSegment(Segment(Joint(Joint.None),
-                                 Frame(Vector(0.4,0.0,0.0))))
-        self.chain.addSegment(Segment(Joint(Joint.TransZ),
-                                 Frame(Vector(0.0,0.0,1.4))))
-        self.chain.addSegment(Segment(Joint(Joint.TransX),
-                                 Frame(Vector(0.0,0.0,0.0))))
-        self.chain.addSegment(Segment(Joint(Joint.TransY),
-                                 Frame(Vector(0.0,0.0,0.4))))
-        self.chain.addSegment(Segment(Joint(Joint.None),
-                                 Frame(Vector(0.0,0.0,0.0))))
+        map(self.chain.addSegment, self.segments)
 
         self.jacsolver   = ChainJntToJacSolver(self.chain)
         self.fksolverpos = ChainFkSolverPos_recursive(self.chain)
         self.fksolvervel = ChainFkSolverVel_recursive(self.chain)
         self.iksolvervel = ChainIkSolverVel_pinv(self.chain)
         self.iksolverpos = ChainIkSolverPos_NR(self.chain,self.fksolverpos,self.iksolvervel)
+
+    def testBuildTree(self):
+        self.tree = Tree()
+        prev_segment_name = "root"
+        for i in self.segments:
+            next_segment_name = i.getName()
+            add_seg_ok = self.tree.addSegment(i, prev_segment_name)
+            msg = "could not add segment {0} to segment {1}".format(prev_segment_name, next_segment_name)
+            self.assertTrue(add_seg_ok, msg)
+            prev_segment_name = next_segment_name
 
     def testFkPosAndJac(self):
         deltaq = 1E-4
@@ -150,7 +164,7 @@ def suite():
     suite.addTest(KinfamTestFunctions('testFkVelAndJac'))
     suite.addTest(KinfamTestFunctions('testFkVelAndIkVel'))
     suite.addTest(KinfamTestFunctions('testFkPosAndIkPos'))
-    return suite
+    # return suite
 
 #suite = suite()
 #unittest.TextTestRunner(verbosity=3).run(suite)
