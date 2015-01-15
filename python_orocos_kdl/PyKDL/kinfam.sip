@@ -156,6 +156,8 @@ using namespace KDL;
 public:
     Tree(const std::string& root_name="root");
     bool addSegment(const Segment& segment, const std::string& hook_name);
+    bool addChain(const Chain& chain, const std::string& hook_name);
+    bool addTree(const Tree& tree, const std::string& hook_name);
     unsigned int getNrOfJoints()const;
     unsigned int getNrOfSegments()const;
     Chain* getChain(const std::string& chain_root, const std::string& chain_tip)const;
@@ -490,17 +492,17 @@ public:
 };
 
 
-class ChainIkSolverPos_LMA : ChainIkSolverPos
-{
-%TypeHeaderCode
-#include <kdl/chainiksolverpos_lma.hpp>
-using namespace KDL;
-%End
-public:
-    ChainIkSolverPos_LMA(const Chain& chain, double eps=0.00001, int _maxiter=500, double _eps_joints=0.000000000000001);
-
-    virtual int CartToJnt(const JntArray& q_init , const Frame& p_in ,JntArray& q_out);
-};
+// class ChainIkSolverPos_LMA : ChainIkSolverPos
+// {
+// %TypeHeaderCode
+// #include <kdl/chainiksolverpos_lma.hpp>
+// using namespace KDL;
+// %End
+// public:
+//     ChainIkSolverPos_LMA(const Chain& chain, double eps=0.00001, int _maxiter=500, double _eps_joints=0.000000000000001);
+//
+//     virtual int CartToJnt(const JntArray& q_init , const Frame& p_in ,JntArray& q_out);
+// };
 
 
 class ChainIkSolverPos_LMA_JL : ChainIkSolverPos
