@@ -325,6 +325,7 @@ using namespace KDL;
     segmentNr=-1)=0;
 };
 
+
 class ChainFkSolverPos_recursive : ChainFkSolverPos
 {
 %TypeHeaderCode
@@ -336,6 +337,33 @@ public:
     ChainFkSolverPos_recursive(const Chain& chain);
     virtual int JntToCart(const JntArray& q_in, Frame& p_out,int segmentNr=-1);
 };
+
+class TreeFkSolverPos
+{
+
+%TypeHeaderCode
+#include <kdl/treefksolver.hpp>
+using namespace KDL;
+%End
+
+    TreeFkSolverPos();
+//    virtual int JntToCart(const JntArray& q_in, Frame& p_out, std::string segmentName);
+
+};
+
+
+class TreeFkSolverPos_recursive : TreeFkSolverPos
+{
+%TypeHeaderCode
+#include <kdl/treefksolverpos_recursive.hpp>
+using namespace KDL;
+%End
+
+public:
+    TreeFkSolverPos_recursive(const Tree& tree);
+    virtual int JntToCart(const JntArray& q_in, Frame& p_out, std::string segmentName);
+};
+
 
 class ChainFkSolverVel_recursive : ChainFkSolverVel
 {
@@ -358,6 +386,21 @@ public:
     virtual int CartToJnt(const JntArray& q_init , const Frame& p_in, JntArray& q_out )=0;
 };
 
+class TreeIkSolverPos {
+%TypeHeaderCode
+#include <kdl/treeiksolver.hpp>
+using namespace KDL;
+typedef std::map<std::string, Frame> Frames;
+%End
+
+//%ModuleHeaderCode
+//#define sipType_Frames sipType_std_string
+//%End
+
+//public:
+//    virtual double CartToJnt(const JntArray& q_init, const Frames& p_in, JntArray& q_out)=0;
+};
+
 class ChainIkSolverVel {
 %TypeHeaderCode
 #include <kdl/chainiksolver.hpp>
@@ -367,6 +410,18 @@ public:
     virtual int CartToJnt(const JntArray& q_in , const Twist& v_in , JntArray& qdot_out )=0;
     virtual int CartToJnt(const JntArray& q_init , const FrameVel& v_in , JntArrayVel& q_out )=0;
 };
+
+class TreeIkSolverVel
+{
+%TypeHeaderCode
+#include <kdl/treeiksolver.hpp>
+using namespace KDL;
+%End
+    //virtual int JntToCart(const JntArrayVel& q_in, FrameVel& p_out,int
+    // segmentNr=-1)=0;
+    virtual int JntToCart(const JntArray& q_in, Frame& p_out, std::string segmentName)=0;
+};
+
 
 class ChainIkSolverPos_NR : ChainIkSolverPos
 {
@@ -394,6 +449,24 @@ public:
     
     virtual int CartToJnt(const JntArray& q_init , const Frame& p_in ,JntArray& q_out);
 };
+
+
+class TreeIkSolverPos_NR_JL : TreeIkSolverPos
+{
+%TypeHeaderCode
+#include <kdl/treeiksolverpos_nr_jl.hpp>
+using namespace KDL;
+%End
+public:
+    TreeIkSolverPos_NR_JL(const Tree& _tree,
+                          const std::vector<std::string>& _endpoints,
+                          const JntArray& _q_min, const JntArray& _q_max,
+                          TreeFkSolverPos& _fksolver, TreeIkSolverVel& _iksolver,
+                          unsigned int _maxiter=100, double _eps=epsilon);
+    //double CartToJnt(const JntArray& q_init, const Frames& p_in, JntArray& q_out);
+};
+
+
 
 class ChainIkSolverVel_pinv : ChainIkSolverVel
 {

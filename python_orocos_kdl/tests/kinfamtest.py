@@ -25,38 +25,44 @@ from PyKDL import *
 from math import *
 import random
 
+
 class KinfamTestFunctions(unittest.TestCase):
-    
     def setUp(self):
         seg1 = Segment("seg1", Joint(Joint.RotZ),
-                                 Frame(Vector(0.0,0.0,0.0)))
+                       Frame(Vector(0.0, 0.0, 0.0)))
         seg2 = Segment("seg2", Joint(Joint.RotX),
-                                 Frame(Vector(0.0,0.0,0.9)))
+                       Frame(Vector(0.0, 0.0, 0.9)))
         seg3 = Segment("seg3", Joint(Joint.None),
-                                 Frame(Vector(-0.4,0.0,0.0)))
+                       Frame(Vector(-0.4, 0.0, 0.0)))
         seg4 = Segment("seg4", Joint(Joint.RotY),
-                             Frame(Vector(0.0,0.0,1.2)))
+                       Frame(Vector(0.0, 0.0, 1.2)))
         seg5 = Segment("seg5", Joint(Joint.None),
-                                 Frame(Vector(0.4,0.0,0.0)))
+                       Frame(Vector(0.4, 0.0, 0.0)))
         seg6 = Segment("seg6", Joint(Joint.TransZ),
-                                 Frame(Vector(0.0,0.0,1.4)))
+                       Frame(Vector(0.0, 0.0, 1.4)))
         seg7 = Segment("seg7", Joint(Joint.TransX),
-                                 Frame(Vector(0.0,0.0,0.0)))
+                       Frame(Vector(0.0, 0.0, 0.0)))
         seg8 = Segment("seg8", Joint(Joint.TransY),
-                                 Frame(Vector(0.0,0.0,0.4)))
+                       Frame(Vector(0.0, 0.0, 0.4)))
         seg9 = Segment("seg9", Joint(Joint.None),
-                                 Frame(Vector(0.0,0.0,0.0)))
+                       Frame(Vector(0.0, 0.0, 0.0)))
 
         self.segments = (seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9)
 
         self.chain = Chain()
         map(self.chain.addSegment, self.segments)
 
-        self.jacsolver   = ChainJntToJacSolver(self.chain)
-        self.fksolverpos = ChainFkSolverPos_recursive(self.chain)
+        self.tree = Tree()
+        self.tree.addChain(self.chain, "root")
+
+        self.jacsolver = ChainJntToJacSolver(self.chain)
+
+        self.chain_fksolverpos = ChainFkSolverPos_recursive(self.chain)
+        self.tree_fksolverpos = TreeFkSolverPos_recursive(self.tree)
+
         self.fksolvervel = ChainFkSolverVel_recursive(self.chain)
         self.iksolvervel = ChainIkSolverVel_pinv(self.chain)
-        self.iksolverpos = ChainIkSolverPos_NR(self.chain,self.fksolverpos,self.iksolvervel)
+        self.iksolverpos = ChainIkSolverPos_NR(self.chain, self.chain_fksolverpos, self.iksolvervel)
 
     def testBuildTree(self):
         tree = Tree()
@@ -85,92 +91,93 @@ class KinfamTestFunctions(unittest.TestCase):
         deltaq = 1E-4
         epsJ = 1E-4
 
-        F1=Frame()
-        F2=Frame()
+        F1 = Frame()
+        F2 = Frame()
 
-        q=JntArray(self.chain.getNrOfJoints())
-        jac=Jacobian(self.chain.getNrOfJoints())
-        
-        for i in range(q.rows()):
-            q[i]=random.uniform(-3.14,3.14)
+        q = JntArray(self.chain.getNrOfJoints())
+        jac = Jacobian(self.chain.getNrOfJoints())
 
-        self.jacsolver.JntToJac(q,jac)
-        
         for i in range(q.rows()):
-            oldqi=q[i];
-            q[i]=oldqi+deltaq
-            self.assert_(0==self.fksolverpos.JntToCart(q,F2))
-            q[i]=oldqi-deltaq
-            self.assert_(0==self.fksolverpos.JntToCart(q,F1))
-            q[i]=oldqi
-            Jcol1 = diff(F1,F2,2*deltaq)
-            Jcol2 = Twist(Vector(jac[0,i],jac[1,i],jac[2,i]),
-                          Vector(jac[3,i],jac[4,i],jac[5,i]))
-            self.assertEqual(Jcol1,Jcol2);
+            q[i] = random.uniform(-3.14, 3.14)
+
+        self.jacsolver.JntToJac(q, jac)
+
+        for i in range(q.rows()):
+            oldqi = q[i];
+            q[i] = oldqi + deltaq
+            self.assert_(0 == self.chain_fksolverpos.JntToCart(q, F2))
+            q[i] = oldqi - deltaq
+            self.assert_(0 == self.chain_fksolverpos.JntToCart(q, F1))
+            q[i] = oldqi
+            Jcol1 = diff(F1, F2, 2 * deltaq)
+            Jcol2 = Twist(Vector(jac[0, i], jac[1, i], jac[2, i]),
+                          Vector(jac[3, i], jac[4, i], jac[5, i]))
+            self.assertEqual(Jcol1, Jcol2);
 
     def testFkVelAndJac(self):
         deltaq = 1E-4
-        epsJ   = 1E-4
-    
-        q=JntArray(self.chain.getNrOfJoints())
-        qdot=JntArray(self.chain.getNrOfJoints())
-        for i in range(q.rows()):
-            q[i]=random.uniform(-3.14,3.14)
-            qdot[i]=random.uniform(-3.14,3.14)
+        epsJ = 1E-4
 
-        qvel=JntArrayVel(q,qdot);
-        jac=Jacobian(self.chain.getNrOfJoints())
+        q = JntArray(self.chain.getNrOfJoints())
+        qdot = JntArray(self.chain.getNrOfJoints())
+        for i in range(q.rows()):
+            q[i] = random.uniform(-3.14, 3.14)
+            qdot[i] = random.uniform(-3.14, 3.14)
+
+        qvel = JntArrayVel(q, qdot);
+        jac = Jacobian(self.chain.getNrOfJoints())
 
         cart = FrameVel.Identity();
         t = Twist.Zero();
 
-        self.jacsolver.JntToJac(qvel.q,jac)
-        self.assert_(self.fksolvervel.JntToCart(qvel,cart)==0)
-        MultiplyJacobian(jac,qvel.qdot,t)
-        self.assertEqual(cart.deriv(),t)
+        self.jacsolver.JntToJac(qvel.q, jac)
+        self.assert_(self.fksolvervel.JntToCart(qvel, cart) == 0)
+        MultiplyJacobian(jac, qvel.qdot, t)
+        self.assertEqual(cart.deriv(), t)
 
     def testFkVelAndIkVel(self):
         epsJ = 1E-7
 
-        q=JntArray(self.chain.getNrOfJoints())
-        qdot=JntArray(self.chain.getNrOfJoints())
+        q = JntArray(self.chain.getNrOfJoints())
+        qdot = JntArray(self.chain.getNrOfJoints())
         for i in range(q.rows()):
-            q[i]=random.uniform(-3.14,3.14)
-            qdot[i]=random.uniform(-3.14,3.14)
+            q[i] = random.uniform(-3.14, 3.14)
+            qdot[i] = random.uniform(-3.14, 3.14)
 
-        qvel=JntArrayVel(q,qdot)
-        qdot_solved=JntArray(self.chain.getNrOfJoints())
-        
+        qvel = JntArrayVel(q, qdot)
+        qdot_solved = JntArray(self.chain.getNrOfJoints())
+
         cart = FrameVel()
-        
-        self.assert_(0==self.fksolvervel.JntToCart(qvel,cart))
-        self.assert_(0==self.iksolvervel.CartToJnt(qvel.q,cart.deriv(),qdot_solved))
-        
-        self.assertEqual(qvel.qdot,qdot_solved);
-        
+
+        self.assert_(0 == self.fksolvervel.JntToCart(qvel, cart))
+        self.assert_(0 == self.iksolvervel.CartToJnt(qvel.q, cart.deriv(), qdot_solved))
+
+        self.assertEqual(qvel.qdot, qdot_solved);
+
 
     def testFkPosAndIkPos(self):
-        q=JntArray(self.chain.getNrOfJoints())
+        q = JntArray(self.chain.getNrOfJoints())
         for i in range(q.rows()):
-            q[i]=random.uniform(-3.14,3.14)
-        
-        q_init=JntArray(self.chain.getNrOfJoints())
-        for i in range(q_init.rows()):
-            q_init[i]=q[i]+0.1*random.random()
-            
-        q_solved=JntArray(q.rows())
+            q[i] = random.uniform(-3.14, 3.14)
 
-        F1=Frame.Identity()
-        F2=Frame.Identity()
-    
-        self.assert_(0==self.fksolverpos.JntToCart(q,F1))
-        self.assert_(0==self.iksolverpos.CartToJnt(q_init,F1,q_solved))
-        self.assert_(0==self.fksolverpos.JntToCart(q_solved,F2))
-        
-        self.assertEqual(F1,F2)
-        self.assertEqual(q,q_solved)
-        
-        
+        q_init = JntArray(self.chain.getNrOfJoints())
+        for i in range(q_init.rows()):
+            q_init[i] = q[i] + 0.1 * random.random()
+
+        q_solved = JntArray(q.rows())
+
+        F1 = Frame.Identity()
+        F2 = Frame.Identity()
+
+        self.assert_(0 == self.chain_fksolverpos.JntToCart(q, F1))
+        self.assert_(0 == self.tree_fksolverpos.JntToCart(q, F1, "seg9"))
+        self.assert_(0 == self.iksolverpos.CartToJnt(q_init, F1, q_solved))
+        self.assert_(0 == self.chain_fksolverpos.JntToCart(q_solved, F2))
+
+        self.assertEqual(F1, F2)
+        self.assertEqual(q, q_solved)
+
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(KinfamTestFunctions('testFkPosAndJac'))
@@ -179,6 +186,6 @@ def suite():
     suite.addTest(KinfamTestFunctions('testFkPosAndIkPos'))
     # return suite
 
-#suite = suite()
+# suite = suite()
 #unittest.TextTestRunner(verbosity=3).run(suite)
             
