@@ -9,7 +9,6 @@ fi
 
 cd orocos_kdl
 echo "in directory: " `pwd`
-export MACOSX_DEPLOYMENT_TARGET=10.6
 
 cmake -DCMAKE_BUILD_TYPE:STRING=Release \
       -DCMAKE_INSTALL_PREFIX=$PREFIX \
@@ -21,8 +20,11 @@ make install
 cd ..
 cd python_orocos_kdl 
 
-cmake   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.8 \
-        -DPYTHON_SITE_PACKAGES_INSTALL_DIR=$PREFIX/lib/python2.7/site-packages \
+#SDK="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk"
+#        -DCMAKE_OSX_DEPLOYMENT_TARGET="" \
+#        -DCMAKE_OSX_SYSROOT=$SDK \
+
+cmake   -DPYTHON_SITE_PACKAGES_INSTALL_DIR=$PREFIX/lib/python2.7/site-packages \
         -Dorocos_kdl_DIR=$PREFIX/share/orocos_kdl \
         -DCMAKE_INSTALL_PREFIX=$PREFIX \
         -DPYTHON_INCLUDE_DIR=$PREFIX/include/python2.7 \
