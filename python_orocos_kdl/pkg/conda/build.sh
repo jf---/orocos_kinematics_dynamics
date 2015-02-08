@@ -9,7 +9,7 @@ fi
 
 cd orocos_kdl
 echo "in directory: " `pwd`
-#export MACOSX_DEPLOYMENT_TARGET=10.6
+export MACOSX_DEPLOYMENT_TARGET=10.6
 
 cmake -DCMAKE_BUILD_TYPE:STRING=Release \
       -DCMAKE_INSTALL_PREFIX=$PREFIX \
