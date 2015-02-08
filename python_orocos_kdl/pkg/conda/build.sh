@@ -7,7 +7,11 @@ if test -x /usr/bin/getconf; then
     ncpus=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 fi
 
+<<<<<<< HEAD
 cd ../../../orocos_kdl
+=======
+cd orocos_kdl
+>>>>>>> conda built
 echo "in directory: " `pwd`
 #export MACOSX_DEPLOYMENT_TARGET=10.6
 
