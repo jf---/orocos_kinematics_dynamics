@@ -156,8 +156,6 @@ using namespace KDL;
 public:
     Tree(const std::string& root_name="root");
     bool addSegment(const Segment& segment, const std::string& hook_name);
-    bool addChain(const Chain& chain, const std::string& hook_name);
-    bool addTree(const Tree& tree, const std::string& hook_name);
     unsigned int getNrOfJoints()const;
     unsigned int getNrOfSegments()const;
     Chain* getChain(const std::string& chain_root, const std::string& chain_tip)const;
@@ -184,7 +182,7 @@ public:
 
     double __getitem__ (int index);
 %MethodCode
-    if (a0 < 0 || a0 >= sipCpp->rows()) {
+    if (a0 < 0 || a0 >= (int)sipCpp->rows()) {
         PyErr_SetString(PyExc_IndexError, "JntArray index out of range");
         return 0;
     }
@@ -193,7 +191,7 @@ public:
     
     void __setitem__(int index, double value);
 %MethodCode
-    if (a0 < 0 || a0 >= sipCpp->rows()) {
+    if (a0 < 0 || a0 >= (int)sipCpp->rows()) {
         PyErr_SetString(PyExc_IndexError, "JntArray index out of range");
         return 0;
     }
@@ -266,7 +264,7 @@ public:
 %MethodCode
     int i,j;
     PyArg_ParseTuple(a0,"ii",&i,&j);
-    if (i < 0 || j < 0 || i > 5 || j >= sipCpp->columns()) {
+    if (i < 0 || j < 0 || i > 5 || j >= (int)sipCpp->columns()) {
         PyErr_SetString(PyExc_IndexError, "Jacobian index out of range");
         return 0;
     }
@@ -277,7 +275,7 @@ public:
 %MethodCode
     int i,j;
     PyArg_ParseTuple(a0,"ii",&i,&j);
-    if (i < 0 || j < 0 || i > 5 || j >= sipCpp->columns()) {
+    if (i < 0 || j < 0 || i > 5 || j >= (int)sipCpp->columns()) {
         PyErr_SetString(PyExc_IndexError, "Jacobian index out of range");
         return 0;
     }
@@ -325,7 +323,6 @@ using namespace KDL;
     segmentNr=-1)=0;
 };
 
-
 class ChainFkSolverPos_recursive : ChainFkSolverPos
 {
 %TypeHeaderCode
@@ -337,33 +334,6 @@ public:
     ChainFkSolverPos_recursive(const Chain& chain);
     virtual int JntToCart(const JntArray& q_in, Frame& p_out,int segmentNr=-1);
 };
-
-class TreeFkSolverPos
-{
-
-%TypeHeaderCode
-#include <kdl/treefksolver.hpp>
-using namespace KDL;
-%End
-
-    TreeFkSolverPos();
-//    virtual int JntToCart(const JntArray& q_in, Frame& p_out, std::string segmentName);
-
-};
-
-
-class TreeFkSolverPos_recursive : TreeFkSolverPos
-{
-%TypeHeaderCode
-#include <kdl/treefksolverpos_recursive.hpp>
-using namespace KDL;
-%End
-
-public:
-    TreeFkSolverPos_recursive(const Tree& tree);
-    virtual int JntToCart(const JntArray& q_in, Frame& p_out, std::string segmentName);
-};
-
 
 class ChainFkSolverVel_recursive : ChainFkSolverVel
 {
@@ -386,21 +356,6 @@ public:
     virtual int CartToJnt(const JntArray& q_init , const Frame& p_in, JntArray& q_out )=0;
 };
 
-class TreeIkSolverPos {
-%TypeHeaderCode
-#include <kdl/treeiksolver.hpp>
-using namespace KDL;
-typedef std::map<std::string, Frame> Frames;
-%End
-
-//%ModuleHeaderCode
-//#define sipType_Frames sipType_std_string
-//%End
-
-//public:
-//    virtual double CartToJnt(const JntArray& q_init, const Frames& p_in, JntArray& q_out)=0;
-};
-
 class ChainIkSolverVel {
 %TypeHeaderCode
 #include <kdl/chainiksolver.hpp>
@@ -410,18 +365,6 @@ public:
     virtual int CartToJnt(const JntArray& q_in , const Twist& v_in , JntArray& qdot_out )=0;
     virtual int CartToJnt(const JntArray& q_init , const FrameVel& v_in , JntArrayVel& q_out )=0;
 };
-
-class TreeIkSolverVel
-{
-%TypeHeaderCode
-#include <kdl/treeiksolver.hpp>
-using namespace KDL;
-%End
-    //virtual int JntToCart(const JntArrayVel& q_in, FrameVel& p_out,int
-    // segmentNr=-1)=0;
-    virtual int JntToCart(const JntArray& q_in, Frame& p_out, std::string segmentName)=0;
-};
-
 
 class ChainIkSolverPos_NR : ChainIkSolverPos
 {
@@ -449,24 +392,6 @@ public:
     
     virtual int CartToJnt(const JntArray& q_init , const Frame& p_in ,JntArray& q_out);
 };
-
-
-class TreeIkSolverPos_NR_JL : TreeIkSolverPos
-{
-%TypeHeaderCode
-#include <kdl/treeiksolverpos_nr_jl.hpp>
-using namespace KDL;
-%End
-public:
-    TreeIkSolverPos_NR_JL(const Tree& _tree,
-                          const std::vector<std::string>& _endpoints,
-                          const JntArray& _q_min, const JntArray& _q_max,
-                          TreeFkSolverPos& _fksolver, TreeIkSolverVel& _iksolver,
-                          unsigned int _maxiter=100, double _eps=epsilon);
-    //double CartToJnt(const JntArray& q_init, const Frames& p_in, JntArray& q_out);
-};
-
-
 
 class ChainIkSolverVel_pinv : ChainIkSolverVel
 {
@@ -572,11 +497,10 @@ public:
 // using namespace KDL;
 // %End
 // public:
-//     ChainIkSolverPos_LMA(const Chain& chain, double eps=0.00001, int _maxiter=500, double _eps_joints=0.000000000000001);
-//
+//     ChainIkSolverPos_LMA(const Chain& chain, double eps=1E-5, int _maxiter=500, double _eps_joints=1E-15);
+
 //     virtual int CartToJnt(const JntArray& q_init , const Frame& p_in ,JntArray& q_out);
 // };
-
 
 class ChainIkSolverPos_LMA_JL : ChainIkSolverPos
 {
@@ -585,9 +509,7 @@ class ChainIkSolverPos_LMA_JL : ChainIkSolverPos
 using namespace KDL;
 %End
 public:
-    ChainIkSolverPos_LMA_JL(const Chain& chain, const JntArray& _q_min, const JntArray& _q_max, double eps=0.00001,
-     int _maxiter=500, double _eps_joints=0.000000000000001);
-
+    ChainIkSolverPos_LMA(const Chain& chain, double eps=0.00001, int _maxiter=500, double _eps_joints=0.000000000000001);
     virtual int CartToJnt(const JntArray& q_init , const Frame& p_in ,JntArray& q_out);
 };
 
