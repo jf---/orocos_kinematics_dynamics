@@ -147,8 +147,11 @@ public:
      */
     void display_jac(const KDL::JntArray& jval);
 
+    void set_joint_limits(const KDL::JntArray& qmin, const KDL::JntArray& qmax);
 
-
+    void disable_joint_limits()       { use_joint_limits = false; }
+    void enable_joint_limits()        { use_joint_limits = true; }
+    bool joint_limits_enabled() const { return use_joint_limits; }
 
 public:
 
@@ -231,6 +234,10 @@ private:
     VectorXq diffq;
     VectorXq q_new;
     VectorXq original_Aii;
+
+    bool use_joint_limits;
+    VectorXq q_min;
+    VectorXq q_max;
 };
 
 
