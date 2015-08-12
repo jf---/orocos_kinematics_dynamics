@@ -135,6 +135,12 @@ void ChainIkSolverPos_LMA::set_joint_limits(const JntArray &_qmin, const JntArra
     q_max =  _qmax.data;
 }
 
+void ChainIkSolverPos_LMA::set_weights(const Eigen::MatrixXd &q){
+	std::cout << "weights: " << q <<"\n";
+	L=q;
+}
+
+
 
 void ChainIkSolverPos_LMA::compute_jacobian(const VectorXq& q) {
 	using namespace KDL;

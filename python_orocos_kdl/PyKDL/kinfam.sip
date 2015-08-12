@@ -461,10 +461,7 @@ public:
     double c_item;
     PyObject *list=a0;
     numRows=PyList_Size(list);
-    PyObject *temp1;
-    temp1=PyList_GetItem(list,0);
-    numCols=PyList_Size(temp1);
-    if (numRows!=numCols) {
+    if (numRows!=5) {
        sipIsErr=1; //todo: raise exception
     }
     Eigen::MatrixXd Mq;
@@ -500,6 +497,48 @@ public:
     ChainIkSolverPos_LMA(const Chain& chain, double eps=0.00001, int _maxiter=500, double _eps_joints=0.000000000000001);
 
     virtual int CartToJnt(const JntArray& q_init , const Frame& p_in ,JntArray& q_out);
+
+    void set_joint_limits(const JntArray &_qmin, const JntArray &_qmax);
+
+    void set_weight(SIP_PYLIST);
+%MethodCode
+    //void setWeightJS(const Eigen::MatrixXd& Mx);
+    //Mx has to be a simetric positive definite Matrix
+    //unsigned int nOfJoints=sipCpp->chain.getNrOfJoints(); //To check that we are receiving valid data dimensions. This doesn't work, chain is a private member. todo: How can we check for this?
+    Py_ssize_t numRows;
+    double c_item;
+    PyObject *list=a0;
+    numRows=PyList_Size(list);
+    PyObject *temp1;
+    temp1=PyList_GetItem(list,0);
+
+
+    Eigen::MatrixXd Mq;
+    Mq=Eigen::MatrixXd::Identity(6,1);
+
+    for (Py_ssize_t r=0;r<numRows;r++) {
+        PyObject *row;
+        row=PyList_GetItem(list,r);
+        c_item=PyFloat_AsDouble(row);
+        Mq(r)= c_item;
+        }
+    sipCpp->set_weights(Mq);
+%End
+
+    bool display_information;
+
+    void enable_joint_limits();
+
+    bool joint_limits_enabled();
+
+    void disable_joint_limits();
+
+
+//    void display_jac(const KDL::JntArray& jval);
+//
+//    void compute_jacobian(const VectorXq& q);
+//
+//    void compute_fwdpos(const VectorXq& q);
 };
 
 

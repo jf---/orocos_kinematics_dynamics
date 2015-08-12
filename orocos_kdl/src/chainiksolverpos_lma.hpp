@@ -149,6 +149,8 @@ public:
 
     void set_joint_limits(const KDL::JntArray& qmin, const KDL::JntArray& qmax);
 
+    void set_weights(const Eigen::MatrixXd& q);
+
     void disable_joint_limits()       { use_joint_limits = false; }
     void enable_joint_limits()        { use_joint_limits = true; }
     bool joint_limits_enabled() const { return use_joint_limits; }
